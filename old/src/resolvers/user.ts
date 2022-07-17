@@ -10,12 +10,8 @@ import {
 } from "type-graphql";
 import { User } from "../entities/User";
 import argon2 from "argon2";
-
-declare module "express-session" {
-  interface Session {
-    user: string;
-  }
-}
+import { parse } from "path";
+import { json } from "express";
 
 @InputType()
 class UsernamePasswordInput {
@@ -94,6 +90,8 @@ export class UserResolver {
     return { user };
   }
 
+  
+
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") options: UsernamePasswordInput,
@@ -103,17 +101,19 @@ export class UserResolver {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
       return {
-        errors: [{ field: "username", message: "that username doesnt exist" }],
+        errors: [{ field: "username", message: req.body }],
       };
     }
     const valid = await argon2.verify(user.password, options.password);
 
     if (!valid) {
       return {
-        errors: [{ field: "username", message: "that username doesnt exist" }],
+        errors: [{ field: "username", message: req.body  }],
       };
     }
-    req.session!.userid = user.id;
+    //req.session.userId = user?.id;
+
     return { user };
   }
 }
+

@@ -7,10 +7,9 @@ import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
-import {
-  ApolloServerPluginLandingPageGraphQLPlayground
-} from "apollo-server-core";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { MyContext } from "./types";
+import { Session } from 'inspector';
 
 const redis = require("redis");
 const session = require("express-session");
@@ -28,7 +27,7 @@ const main = async () => {
 
   const redisClient = redis.createClient({
     port: 6379,
-    host: '127.0.0.1',
+    host: "127.0.0.1",
   });
   redisClient.connect().catch(console.error);
 
@@ -58,8 +57,11 @@ const main = async () => {
       validate: false,
     }),
     plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
-    context: ({ req, res })  => ({ em: orm.em, req, res}),
+    context: ({ req, res }) => {
+      return { em: orm.em, req, res,redis : };
+    },
   });
+
 
   await apolloServer.start().then(() => {
     apolloServer.applyMiddleware({ app });
